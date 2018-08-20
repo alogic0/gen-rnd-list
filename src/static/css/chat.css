@@ -67,7 +67,7 @@ body {
   color: #888;
   font-size: 15px;
   display: inline;
-  float: right;
+  float: left;
 }
 .message .name {
   display: inline-block;
