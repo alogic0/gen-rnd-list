@@ -39,16 +39,13 @@ setup :: Chan Message -> Window -> UI ()
 setup globalMsgs window = do
     msgs <- liftIO $ Chan.dupChan globalMsgs
 
-    return window # set title "Chat"
+    return window # set title "Numbers"
     
-    (nickRef, nickname) <- mkNickname
-    messageArea         <- mkMessageArea msgs nickRef
+    messageArea         <- mkMessageArea msgs 
 
     getBody window #+
-        [ UI.div #. "header"   #+ [string "Threepenny Chat"]
-        , UI.div #. "gradient"
-        , viewSource
-        , element nickname
+        [ UI.div #. "header"   #+ [string "Lucky numbers"]
+--        , UI.div #. "gradient"
         , element messageArea
         ]
     
@@ -57,8 +54,7 @@ setup globalMsgs window = do
     on UI.disconnect window $ const $ liftIO $ do
         killThread messageReceiver
         now   <- getCurrentTime
-        nick  <- readIORef nickRef
-        Chan.writeChan msgs (now,nick,"( left the conversation )")
+        Chan.writeChan msgs (now,"nick","( left the conversation )")
 
 
 receiveMessages w msgs messageArea = do
@@ -69,33 +65,19 @@ receiveMessages w msgs messageArea = do
           UI.scrollToBottom messageArea
           flushCallBuffer -- make sure that JavaScript functions are executed
 
-mkMessageArea :: Chan Message -> IORef String -> UI Element
-mkMessageArea msgs nickname = do
+mkMessageArea :: Chan Message -> UI Element
+mkMessageArea msgs = do
     input <- UI.textarea #. "send-textarea"
     
     on UI.sendValue input $ \content -> do
         element input # set value ""
         when (not (null content)) $ liftIO $ do
             now  <- getCurrentTime
-            nick <- readIORef nickname
-            when (not (null nick)) $
-                Chan.writeChan msgs (now,nick,content)
+            Chan.writeChan msgs (now,"nick",content)
 
     UI.div #. "message-area" #+ [UI.div #. "send-area" #+ [element input]]
 
 
-mkNickname :: UI (IORef String, Element)
-mkNickname = do
-    input  <- UI.input #. "name-input"
-    el     <- UI.div   #. "name-area"  #+
-                [ UI.span  #. "name-label" #+ [string "Your name "]
-                , element input
-                ]
-    UI.setFocus input
-    
-    nick <- liftIO $ newIORef ""
-    on UI.keyup input $ \_ -> liftIO . writeIORef nick =<< get value input
-    return (nick,el)
 
 mkMessage :: Message -> UI Element
 mkMessage (timestamp, nick, content) = do
@@ -103,7 +85,7 @@ mkMessage (timestamp, nick, content) = do
     UI.div #. "message" #+
       [UI.pre #+ 
         [ UI.div #. "timestamp" #+ [string $ show timestamp]
-        , UI.div #. "name"      #+ [string $ nick ++ " says:"]
+      --  , UI.div #. "name"      #+ [string $ nick ++ " says:"]
         , UI.div #. "content"   #+ [string content1]
         ]
       ]
@@ -128,8 +110,10 @@ convert content = unlines . intersperse "\n" $
                 append word ""   = word
                 append word line = line ++ " " ++  word
 
+{-
 viewSource :: UI Element
 viewSource =
     UI.anchor #. "view-source" # set UI.href url #+ [string "View source code"]
     where
     url = samplesURL ++ "Chat.hs"
+-}
