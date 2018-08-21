@@ -6,15 +6,15 @@ import System.FilePath
 
 #if defined(CABAL)
 -- using cabal
-import qualified Paths_threepenny_gui (getDataDir)
+import qualified Paths_gen_rnd_list (getDataDir)
 
 getStaticDir :: IO FilePath
-getStaticDir = (</> "samples/static") `liftM` Paths_threepenny_gui.getDataDir
+getStaticDir = (</> "app/static") `liftM` Paths_gen_rnd_list.getDataDir
 
 #elif defined(FPCOMPLETE)
 
 getStaticDir :: IO FilePath
-getStaticDir = return "samples/static"
+getStaticDir = return "app/static"
 
 #else
 -- using GHCi
