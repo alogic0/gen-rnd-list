@@ -91,8 +91,15 @@ mkMessage (timestamp, nick, content) = do
       ]
 
 convert content = unlines . intersperse "\n" $
-                  map ( unlines . wrap maxLine . unwords . transform . words) (lines content)
-  where transform ls = init ls ++ [showList . genList . read . last $ ls]
+                  map ( unlines . wrap maxLine . unwords) . transform 
+                  . separate . map  words $ lines content
+  where separate :: [[String]] -> [([String], Int)]
+        separate = map (\ls -> (init ls, read $ last ls))
+        transform ls = 
+          let sumN = sum . snd . unzip $ ls
+              listN = rndPermute seed sumN
+          in
+            init ls ++ [showList . genList . read . last $ ls]
         genList n = rndPermute (mkStdGen n) n
         showList ls = "[" ++ (concat $ intersperse ", " (map show ls)) ++ "]"
         wrap :: Int -> String -> [String]
