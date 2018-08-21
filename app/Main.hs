@@ -5,7 +5,7 @@ import qualified Control.Concurrent.Chan as Chan
 import Control.Exception
 import Control.Monad
 import Data.Functor
-import Data.List (intersperse)
+import Data.List (intersperse, sort)
 import Data.Time
 import Data.IORef
 import Prelude hiding (catch)
@@ -18,7 +18,7 @@ import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core hiding (text)
 
 {-----------------------------------------------------------------------------
-    Chat
+    Lucky numbers 
 ------------------------------------------------------------------------------}
 
 maxLine = 43
@@ -81,7 +81,8 @@ mkMessageArea msgs = do
 
 mkMessage :: Message -> UI Element
 mkMessage (timestamp, nick, content) = do
-    let content1 = convert content
+    seed <- liftIO $ newStdGen
+    let content1 = convert seed content
     UI.div #. "message" #+
       [UI.pre #+ 
         [ UI.div #. "timestamp" #+ [string $ show timestamp]
@@ -90,7 +91,7 @@ mkMessage (timestamp, nick, content) = do
         ]
       ]
 
-convert content = unlines . intersperse "\n" $
+convert seed content = unlines . intersperse "\n" $
                   map ( unlines . wrap maxLine . unwords) . transform 
                   . separate . map  words $ lines content
   where separate :: [[String]] -> [([String], Int)]
@@ -98,9 +99,11 @@ convert content = unlines . intersperse "\n" $
         transform ls = 
           let sumN = sum . snd . unzip $ ls
               listN = rndPermute seed sumN
+              fChop ((ls, n) : lss) bigLst = (ls ++ [showList . sort . take n $ bigLst] ++ [show n]) : fChop lss (drop n bigLst)
+              fChop _ [] = []
+              fChop [] _ = []
           in
-            init ls ++ [showList . genList . read . last $ ls]
-        genList n = rndPermute (mkStdGen n) n
+              fChop ls listN
         showList ls = "[" ++ (concat $ intersperse ", " (map show ls)) ++ "]"
         wrap :: Int -> String -> [String]
         wrap maxWidth text = reverse (lastLine : accLines)

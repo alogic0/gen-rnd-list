@@ -63,7 +63,7 @@ executable gen-rnd-list
   cpp-options:            -DCABAL
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.11 && <4.12
+  build-depends:       base >=4.10
                       ,filepath
                       ,mtl
                       ,random
