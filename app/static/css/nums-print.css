@@ -1,0 +1,86 @@
+body {
+  background: #000;
+  color: #fff;
+  font-family: monospace;
+  font-size: 26px;
+/*  text-shadow: #000 3px 1px 3px; */
+  padding:0;
+  margin:0;
+/*  background: url(wood-bg.png) #333; */
+}
+.header {
+  font-family: 'Fredericka the Great', cursive;
+  font-size: 50px;
+  color: #ad1c43;
+  float: left;
+  padding: 10px 20px;
+  position:absolute;
+/*  z-index:2; */
+}
+.message-area {
+  clear:both;
+  padding: 20px;
+  color: #fff;
+  position: absolute;
+  top: 1em;
+  right:0;
+  left:0;
+  bottom:10%;
+/*  overflow: auto; */
+}
+.button {
+  position: fixed;
+  top: 82%;
+  bottom: 15%;
+  left: 85%;
+  right: 10%;
+}
+.send-area {
+  z-index:0;
+  position:fixed;
+  top:20%;
+  left:5%;
+  right:10%;
+  bottom:20%;
+  background:#fff;
+}
+.send-textarea {
+  padding: 0.25em;
+  border:0;
+  position: absolute;
+  left:0;
+  width:100%;
+  bottom:0;
+  top:-1px;
+  font-family: monospace;
+  font-size: 18px;
+  background: #111;
+  color: #999;
+}
+.message {
+  margin-top: 1em;
+  border-top: 0.1em dotted #333;
+  margin-left: 5%;
+}
+.message .timestamp {
+  color: #888;
+  font-size: 15px;
+  display: inline;
+  float: left;
+}
+.message .name {
+  display: inline-block;
+  font-size: 18px;
+  font-style: italic;
+  float:left;
+}
+.message .content {
+  display:block;
+  clear:both;
+}
+.break-before {
+  page-break-before: always;
+}
+.breake-after {
+  page-break-after: always;
+}
