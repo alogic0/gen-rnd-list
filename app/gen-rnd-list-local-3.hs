@@ -34,7 +34,7 @@ main = do
         , jsCallBufferMode = BufferRun
         } $ setup 
 
-type Message = (UTCTime, String, String)
+type Message = (UTCTime, String)
 
 setup :: Window -> UI ()
 setup window = do
@@ -44,9 +44,10 @@ setup window = do
     inputArea           <- UI.textarea #. "send-textarea" 
     
     sendBtn             <- UI.button #. "button" # set UI.text "Отправить"
-    messageArea         <-  UI.div #. "message-area" 
-                            #+ [UI.div #. "send-area" #+ [element inputArea]
-                                                      #+ [element sendBtn]]  
+    messageArea         <-  UI.div #. "message-area" #+
+        [UI.div #. "send-area" #+ 
+          [element inputArea] #+
+          [element sendBtn]]  
 
     getBody window #+
         [ UI.div #. "header"   #+ [string "Lucky numbers"]
@@ -63,30 +64,31 @@ mkWindow :: Window -> String -> UI ()
 mkWindow w content = do
     when (not (null content)) $ do
         now  <- liftIO getCurrentTime
-        msgArea <- mkMessage (now,"nick",content)
+        seed <- liftIO $ newStdGen
+        let contentNew = convert seed content
+        msgArea <- mapM (\str -> mkMessage (now,str)) contentNew
 --        tst <- UI.div #. "message" #+ [UI.pre #+ [string content]]
-        getBody w # set children [msgArea]
+        getBody w # set children msgArea
         return ()
 
 mkMessage :: Message -> UI Element
-mkMessage (timestamp, nick, content) = do
-    seed <- liftIO $ newStdGen
-    let contentNew = convert seed content
-
-        toMessage str = UI.div #. "message" #+
-          [UI.pre #+ 
-            [ UI.div #. "timestamp" #+ [string $ show timestamp]
-            , UI.div #. "content"   #+ [string str]
+mkMessage (timestamp, str) = do
+        UI.p #. "break-before" #+ [string " "] #+
+          [UI.div #. "message" #+
+            [UI.pre #+ 
+              [ UI.div #. "timestamp" #+ [string $ show timestamp]
+              , UI.div #. "content"   #+ [string str]
+              ]
             ]
-          ]
-    UI.div #. "message-area" #+ map toMessage contentNew      
+          ] #+
+          [UI.p #. "break-after" #+ [string " "]]
 
 -- for extra new lines: replace "#n" "\n" ls
 
 convert :: System.Random.StdGen -> String -> [String]
 -- convert seed content = unlines . intersperseN 2 "\n" $
-convert seed content = map (unlines . wrap maxLine)
-  . map unlines . groupN 2
+convert seed content = map unlines
+  . map (concatMap (wrap maxLine)) . groupN 2
   . transform seed
   . separate . map  words $ filter (not . null) $ lines content
 
