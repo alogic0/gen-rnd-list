@@ -6,6 +6,7 @@ import Control.Exception
 import Control.Monad
 import Data.Functor
 import Data.List (intersperse, sort)
+-- import Data.List.Extra (replace)
 import Data.Time
 import Data.IORef
 import Prelude hiding (catch)
@@ -28,7 +29,8 @@ main = do
     static   <- getStaticDir
     messages <- Chan.newChan
     startGUI defaultConfig
-        { jsCustomHTML     = Just "chat.html"
+        { jsCustomHTML     = Just "nums.html"
+        , jsPort           = Just 80
         , jsStatic         = Just static
         , jsCallBufferMode = BufferRun
         } $ setup messages
@@ -91,19 +93,24 @@ mkMessage (timestamp, nick, content) = do
         ]
       ]
 
-convert seed content = unlines . intersperse "\n" $
-                  map ( unlines . wrap maxLine . unwords) . transform 
-                  . separate . map  words $ lines content
+-- for extra new lines: replace "#n" "\n" ls
+
+convert seed content = unlines . intersperseN 2 "\n" $
+                  map ( unlines . wrap maxLine . unwords) . transform seed
+                  . separate . map  words $ filter (not . null) $ lines content
   where separate :: [[String]] -> [([String], Int)]
         separate = map (\ls -> (init ls, read $ last ls))
-        transform ls = 
+        transform seed ls = 
           let sumN = sum . snd . unzip $ ls
               listN = rndPermute seed sumN
-              fChop ((ls, n) : lss) bigLst = (ls ++ [showList . sort . take n $ bigLst] ++ [show n]) : fChop lss (drop n bigLst)
+              fChop ((ls, n) : lss) bigLst =
+                 (ls ++ [showList . sort . take n $ bigLst])
+                 : ["Всего номеров: ", show n]
+                 : fChop lss (drop n bigLst)
               fChop _ [] = []
               fChop [] _ = []
           in
-              fChop ls listN
+              fChop ls listN ++ [["Сумма: ", show sumN]]
         showList ls = "[" ++ (concat $ intersperse ", " (map show ls)) ++ "]"
         wrap :: Int -> String -> [String]
         wrap maxWidth text = reverse (lastLine : accLines)
@@ -119,6 +126,10 @@ convert seed content = unlines . intersperse "\n" $
                   | otherwise                             = (line : acc, word)
                 append word ""   = word
                 append word line = line ++ " " ++  word
+
+intersperseN :: Int -> a -> [a] -> [a]
+intersperseN _ _ [] = []
+intersperseN n e ls = take n ls ++ [e] ++ intersperseN n e (drop n ls)
 
 {-
 viewSource :: UI Element
