@@ -43,36 +43,30 @@ setup window = do
     
     inputArea           <- UI.textarea #. "send-textarea" 
     
-    sendBtn             <- UI.button #. "button" # set UI.text "Send"
+    sendBtn             <- UI.button #. "button" # set UI.text "Отправить"
+    messageArea         <-  UI.div #. "message-area" 
+                            #+ [UI.div #. "send-area" #+ [element inputArea]
+                                                      #+ [element sendBtn]]  
 
     getBody window #+
         [ UI.div #. "header"   #+ [string "Lucky numbers"]
-        , UI.div #. "message-area" #+ [UI.div #. "send-area" #+ [element inputArea]
-                                                             #+ [element sendBtn]]                           
+        , element messageArea
         ]
+    on UI.click sendBtn $ \ _ -> do
+      content <- get value inputArea
+      mkWindow window content
+
     return ()
 
-receiveMessages w msgs messageArea = do
-    messages <- Chan.getChanContents msgs
-    forM_ messages $ \msg -> do
-        runUI w $ do
-          element messageArea #+ [mkMessage msg]
-          UI.scrollToBottom messageArea
-          flushCallBuffer -- make sure that JavaScript functions are executed
 
-mkMessageArea :: Chan Message -> UI Element
-mkMessageArea msgs = do
-    input <- UI.textarea #. "send-textarea"
-    
-    on UI.sendValue input $ \content -> do
-        element input # set value ""
-        when (not (null content)) $ liftIO $ do
-            now  <- getCurrentTime
-            Chan.writeChan msgs (now,"nick",content)
-
-    UI.div #. "message-area" #+ [UI.div #. "send-area" #+ [element input]]
-
-
+mkWindow :: Window -> String -> UI ()
+mkWindow w content = do
+    when (not (null content)) $ do
+        now  <- liftIO getCurrentTime
+        msgArea <- mkMessage (now,"nick",content)
+        bodyArea <- UI.div #. "message-area" #+ [element msgArea]
+        getBody w # set children [bodyArea]
+        return ()
 
 mkMessage :: Message -> UI Element
 mkMessage (timestamp, nick, content) = do
