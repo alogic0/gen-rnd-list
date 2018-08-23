@@ -30,7 +30,7 @@ main = do
     messages <- Chan.newChan
     startGUI defaultConfig
         { jsCustomHTML     = Just "nums.html"
-        , jsPort           = Just 80
+--        , jsPort           = Just 80
         , jsStatic         = Just static
         , jsCallBufferMode = BufferRun
         } $ setup messages
