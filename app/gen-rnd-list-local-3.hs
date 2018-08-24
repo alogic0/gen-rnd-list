@@ -55,6 +55,7 @@ setup window = do
         ]
     on UI.click sendBtn $ \ _ -> do
       content <- get value inputArea
+
       mkWindow window content
 
     return ()
@@ -67,9 +68,9 @@ mkWindow w content = do
         seed <- liftIO $ newStdGen
         let contentNew = convert seed content
         msgArea <- mapM (\str -> mkMessage (now,str)) contentNew
---        tst <- UI.div #. "message" #+ [UI.pre #+ [string content]]
         getBody w # set children msgArea
-        return ()
+        runFunction $ ffi "$('head').append('<link rel=\"stylesheet\" type=\"text/css\" href=\"static/css/nums-print.css\">')"
+--        return ()
 
 mkMessage :: Message -> UI Element
 mkMessage (timestamp, str) = do
