@@ -89,7 +89,7 @@ mkMessage (timestamp, str) = do
 convert :: System.Random.StdGen -> String -> [String]
 -- convert seed content = unlines . intersperseN 2 "\n" $
 convert seed content = map unlines
-  . map (concatMap (wrap maxLine)) . groupN 2
+  . map (concatMap (wrap maxLine)) . groupN 4
   . transform seed
   . separate . map  words $ filter (not . null) $ lines content
 
@@ -99,14 +99,16 @@ transform
 transform seed ls = 
   let sumN = sum . snd . unzip $ ls
       listN = rndPermute seed sumN
-      fChop ((ls, n) : lss) bigLst =
-         (ls ++ " " ++ (localShowList . sort . take n $ bigLst))
-         : ("Всего номеров: " ++ show n)
-         : fChop lss (drop n bigLst)
+      fChop ((client, n) : clients) bigLst =
+         client
+         : ("Всего бонусов: " ++ show n)
+         : (localShowList . sort . take n $ bigLst)
+         : ("Всего бонусов: " ++ show n)
+         : fChop clients (drop n bigLst)
       fChop _ [] = []
       fChop [] _ = []
   in
-      fChop ls listN ++ ["Сумма: " ++ show sumN]
+      fChop ls listN ++ ["Общая cумма бонусов: " ++ show sumN]
 
 
 separate :: [[String]] -> [(String, Int)]
