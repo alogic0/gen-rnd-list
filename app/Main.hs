@@ -103,7 +103,7 @@ convert seed content = unlines . intersperse "\n" $
               fChop _ [] = []
               fChop [] _ = []
           in
-              fChop ls listN
+              fChop ls listN ++ [["Сумма: ", show sumN]]
         showList ls = "[" ++ (concat $ intersperse ", " (map show ls)) ++ "]"
         wrap :: Int -> String -> [String]
         wrap maxWidth text = reverse (lastLine : accLines)
