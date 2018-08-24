@@ -1,12 +1,12 @@
 body {
-  background: #333;
-  color: #ccc;
+  background: #fff;
+  color: #000;
   font-family: monospace;
   font-size: 26px;
-  text-shadow: #000 3px 1px 3px;
+  text-shadow: 0 0 0px;
   padding:0;
   margin:0;
-  background: url(wood-bg.png) #333;
+/*  background: url(wood-bg.png) #333; */
 }
 .header {
   font-family: 'Fredericka the Great', cursive;

@@ -27,59 +27,46 @@ maxLine = 43
 main :: IO ()
 main = do
     static   <- getStaticDir
-    messages <- Chan.newChan
     startGUI defaultConfig
         { jsCustomHTML     = Just "nums.html"
 --        , jsPort           = Just 80
         , jsStatic         = Just static
         , jsCallBufferMode = BufferRun
-        } $ setup messages
+        } $ setup 
 
 type Message = (UTCTime, String, String)
 
-setup :: Chan Message -> Window -> UI ()
-setup globalMsgs window = do
-    msgs <- liftIO $ Chan.dupChan globalMsgs
+setup :: Window -> UI ()
+setup window = do
 
     return window # set title "Numbers"
     
-    messageArea         <- mkMessageArea msgs 
+    inputArea           <- UI.textarea #. "send-textarea" 
+    
+    sendBtn             <- UI.button #. "button" # set UI.text "Отправить"
+    messageArea         <-  UI.div #. "message-area" 
+                            #+ [UI.div #. "send-area" #+ [element inputArea]
+                                                      #+ [element sendBtn]]  
 
     getBody window #+
         [ UI.div #. "header"   #+ [string "Lucky numbers"]
---        , UI.div #. "gradient"
         , element messageArea
         ]
-    
-    messageReceiver <- liftIO $ forkIO $ receiveMessages window msgs messageArea
+    on UI.click sendBtn $ \ _ -> do
+      content <- get value inputArea
+      mkWindow window content
 
-    on UI.disconnect window $ const $ liftIO $ do
-        killThread messageReceiver
-        now   <- getCurrentTime
-        Chan.writeChan msgs (now,"nick","( left the conversation )")
+    return ()
 
 
-receiveMessages w msgs messageArea = do
-    messages <- Chan.getChanContents msgs
-    forM_ messages $ \msg -> do
-        runUI w $ do
-          element messageArea #+ [mkMessage msg]
-          UI.scrollToBottom messageArea
-          flushCallBuffer -- make sure that JavaScript functions are executed
-
-mkMessageArea :: Chan Message -> UI Element
-mkMessageArea msgs = do
-    input <- UI.textarea #. "send-textarea"
-    
-    on UI.sendValue input $ \content -> do
-        element input # set value ""
-        when (not (null content)) $ liftIO $ do
-            now  <- getCurrentTime
-            Chan.writeChan msgs (now,"nick",content)
-
-    UI.div #. "message-area" #+ [UI.div #. "send-area" #+ [element input]]
-
-
+mkWindow :: Window -> String -> UI ()
+mkWindow w content = do
+    when (not (null content)) $ do
+        now  <- liftIO getCurrentTime
+        msgArea <- mkMessage (now,"nick",content)
+        bodyArea <- UI.div #. "message-area" #+ [element msgArea]
+        getBody w # set children [bodyArea]
+        return ()
 
 mkMessage :: Message -> UI Element
 mkMessage (timestamp, nick, content) = do
