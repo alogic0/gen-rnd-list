@@ -66,6 +66,7 @@ executable gen-rnd-list
   build-depends:       base >=4.10
                       ,filepath
                       ,mtl
+                      ,open-browser
                       ,random
                       ,time
                       ,threepenny-gui
