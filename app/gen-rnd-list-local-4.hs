@@ -42,7 +42,7 @@ type LocalTimeString = String
 setup :: Window -> UI ()
 setup window = do
 
-    return window # set title "Lucky Numbers"
+    return window # set title "Numbers"
     
     inputArea           <- UI.textarea #. "send-textarea" 
     
