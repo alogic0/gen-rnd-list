@@ -24,14 +24,14 @@ import Graphics.UI.Threepenny.Core hiding (text)
     Lucky numbers 
 ------------------------------------------------------------------------------}
 
-maxLine = 65
+maxLine = 63
 
 main :: IO ()
 main = do
     static   <- getStaticDir
     startGUI defaultConfig
         { jsCustomHTML     = Just "nums.html"
-        , jsPort           = Just 80
+--        , jsPort           = Just 80
         , jsStatic         = Just static
         , jsCallBufferMode = BufferRun
         } $ setup 
