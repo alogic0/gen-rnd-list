@@ -60,7 +60,7 @@ body {
 .message {
   margin-top: 1em;
   border-top: 0.1em dotted #333;
-  margin-left: 3%;
+  margin-left: 2.5%;
 }
 .message .timestamp {
   color: #888;
